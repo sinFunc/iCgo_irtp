@@ -28,7 +28,7 @@ func RcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
 
 	}
 
-	fmt.Println("Receive payload len=",len)
+	fmt.Println("Receive payload len=",len,"seq=",C.GetSequenceNumber(user)," from ssrc=",C.GetSsrc(user))
 
 	return len
 
@@ -86,13 +86,14 @@ func main() {
 	buf :=[10]uint8{1,2,3,4,5,6,7,8,9}
 	repeat:=10
 	for i := 0; i < repeat; i++ {
-		C.SendDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&buf)),10,0,0)
+		C.SendDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&buf)),10,0)
 	}
 
 	const rcvLen int =1024
 	var rcvBuf [rcvLen]uint8
 	for !gStopFlag.Load(){
-		C.RcvDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&rcvBuf)),(C.int)(rcvLen),0,C.CRcvCb(C.RcvCb),nil)
+		C.RcvDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&rcvBuf)),(C.int)(rcvLen),C.CRcvCb(C.RcvCb),
+		(unsafe.Pointer(pSession)))
 		time.Sleep(time.Millisecond)
 	}
 

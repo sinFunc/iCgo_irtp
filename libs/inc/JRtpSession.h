@@ -25,9 +25,15 @@ public:
     virtual bool Start();
     virtual bool Stop();
 
-    virtual int SendData(const uint8_t* buf,int len,uint32_t pts,uint64_t marker);
-    virtual int RcvData(uint8_t* buf,int len,uint32_t ts,RcvCb rcvCb,void* user);
+    virtual int SendData(const uint8_t *buf, int len, uint16_t marker);
+    virtual int SendDataWithTs(const uint8_t *buf, int len, uint32_t pts, uint16_t marker);
+    virtual int RcvData(uint8_t *buf, int len,RcvCb rcvCb, void *user);
+    virtual int RcvDataWithTs(uint8_t *buf, int len, uint32_t ts, RcvCb rcvCb, void *user);
+    virtual int RcvPayloadData(uint8_t *buf, int len,RcvCb rcvCb, void *user);
 
+
+private:
+    void __updateRtpHeaderData(jrtplib::RTPPacket* p);
 
 protected:
 
@@ -37,9 +43,9 @@ private:
     jrtplib::RTPSessionParams               m_sessParams;
     jrtplib::RTPUDPv4TransmissionParams     m_transParams;
 
-    int         m_nPayloadType;
-    uint32_t    m_nCurPts;
-
+    int                         m_nPayloadType;
+    uint32_t                    m_nCurPts;
+    uint32_t                    m_nSndIncTs;
 
 
 

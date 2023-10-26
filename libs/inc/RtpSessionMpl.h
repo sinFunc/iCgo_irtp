@@ -24,6 +24,20 @@ namespace iRtp {
         int clockRate;  //h264=90000; audio=8000
     };
 
+    struct RtpHeaderData{
+        uint32_t ts;
+        uint16_t seq;
+        uint32_t ssrc;
+        uint32_t csrc[16];
+        uint16_t pt;
+        bool     marker;
+        uint8_t  version;
+        bool     padding;
+        bool     extension;
+        uint8_t  cc;
+    };
+
+
     typedef int (*RcvCb)(const uint8_t *buf, int len, int marker, void *user);
 
 
@@ -62,21 +76,61 @@ namespace iRtp {
          * @param [in] marker:a flag bit for rtp
          * @return the len of real send
          * */
-        virtual int SendData(const uint8_t *buf, int len, uint32_t pts, uint64_t marker) = 0;
+        virtual int SendData(const uint8_t *buf, int len, uint16_t marker) = 0;
+
+        /*
+         * send data with ts
+         * @param [in] buf:rtp payload data
+         * @param [in] len:the len of payload data
+         * @param [in] pts:present timestamp
+         * @param [in] marker:a flag bit for rtp
+         * @return the len of real send
+         * */
+        virtual int SendDataWithTs(const uint8_t *buf, int len, uint32_t pts, uint16_t marker) = 0;
+
 
         /*
          * receive data
          * &param [out] buf:the cache to store data.you should alloc memory by yourself before calling
          * &param [in] len:the len you expect
-         * @param [in] ts:timestamp
-         * @param [out] have_more:it provide a flag bit to judge if you should call this function again to get all data
+         * @param [in] rcvCb:user need to register callback function.
+         * @param [in] user:user param
          * @return the len of real receiving one time
          */
-        virtual int RcvData(uint8_t *buf, int len, uint32_t ts, RcvCb rcvCb, void *user) = 0;
+        virtual int RcvData(uint8_t *buf, int len,RcvCb rcvCb, void *user) = 0;
+
+        /*
+         * receive data with ts
+         * &param [out] buf:the cache to store data.you should alloc memory by yourself before calling
+         * &param [in] len:the len you expect
+         * @param [in] ts:expected timestamp
+         * @param [in] rcvCb:user need to register callback function.
+         * @param [in] user:user param
+         * @return the len of real receiving one time
+         */
+        virtual int RcvDataWithTs(uint8_t *buf, int len, uint32_t ts, RcvCb rcvCb, void *user) = 0;
+
+        /*
+         * receive payload data
+         * @param [out] buf:the cache to store data.you should alloc memory by yourself before calling
+         * @param [in] len:the len you expect
+         * @param [in] ts:expected timestamp
+         * @param [in] rcvCb:user need to register callback function.
+         * @param [in] user:user param
+         * @return the len of real receiving one time
+         */
+        virtual int RcvPayloadData(uint8_t *buf, int len,RcvCb rcvCb, void *user)=0;
+
+
+        /*
+         * get current time rtpHeaderData
+         */
+        const RtpHeaderData& GetRtpHeaderData() const {return m_rtpHeaderData;}
 
 
     protected:
         std::atomic_bool m_bStopFlag;
+        RtpHeaderData    m_rtpHeaderData;
 
     };
 

@@ -19,16 +19,29 @@ public:
     virtual bool Start();
     virtual bool Stop();
 
-    virtual int SendData(const uint8_t* buf,int len,uint32_t pts,uint64_t marker);
-    virtual int RcvData(uint8_t* buf,int len,uint32_t ts,RcvCb rcvCb,void* user);
-
+    virtual int SendData(const uint8_t *buf, int len, uint16_t marker);
+    virtual int SendDataWithTs(const uint8_t *buf, int len, uint32_t pts, uint16_t marker);
+    virtual int RcvData(uint8_t *buf, int len,RcvCb rcvCb, void *user);
+    virtual int RcvDataWithTs(uint8_t *buf, int len, uint32_t ts, RcvCb rcvCb, void *user);
+    virtual int RcvPayloadData(uint8_t *buf, int len,RcvCb rcvCb, void *user);
 
     static void StaticInit();
     static void StaticUnInit();
 
+private:
+    void __updateRtpHeaderData(mblk_t* mp);
 
 private:
     RtpSession*                 m_pRtpSession;
+    std::string                 m_strRemoteIp;
+    int                         m_nRemotePort;
+    bool                        m_bIsFirst;
+
+    uint32_t                    m_nSndPreviousTs;
+    uint32_t                    m_nSndIncTs;
+    uint32_t                    m_nRcvPreviousTs;
+    uint32_t                    m_nRcvIncTs;
+    uint16_t                    m_nRcvSeq;
 
 
 };
