@@ -33,6 +33,12 @@ func RcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
 	return len
 
 }
+//export CRtcpRcvCbFunction
+func CRtcpRcvCbFunction(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp app packet.name=",C.GetAppName(user,rtcpPacket))
+
+	return
+}
 
 
 func registerSignal(){
@@ -80,6 +86,8 @@ func main() {
 		fmt.Println("initRtpSession fails.")
 		return
 	}
+
+	C.RegisterRtcpRcvCb(pSession,0,unsafe.Pointer(C.CRtcpRcvCb(C.CRtcpRcvCbFunction)),(unsafe.Pointer(pSession)))
 
 	registerSignal()
 

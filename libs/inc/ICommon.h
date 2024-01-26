@@ -8,7 +8,7 @@
 #include <chrono>
 
 #define LOG_FIXED_HEADER() ({std::string strRet= \
-        std::move("["+std::string(basename(const_cast<char*>(__FILE__)))+"-"+std::string(__FUNCTION__ )+"-"+std::to_string(__LINE__)+"]"); \
+        std::move("["+std::string(basename(const_cast<char*>(__FILE__)))+"-"+std::string(__FUNCTION__ )+"-"+std::to_string(__LINE__)+"] "); \
         strRet;})
 
 namespace iRtp{
