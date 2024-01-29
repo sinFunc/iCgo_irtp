@@ -20,11 +20,15 @@ int RcvCb(uint8_t *buf, int len, int marker, void *user); //ensure the same func
 
 //typedef struct CRtcpPacket CRtcpPacket;
 typedef void (*CRtcpRcvCb)(void* rtcpPacket,void* user);
-void CRtcpRcvCbFunction(void* rtcpPacket,void* user);
-
+void RtcpAppPacketRcvCb(void* rtcpPacket,void* user);
+void RtcpRRPacketRcvCb(void* rtcpPacket,void* user);
+void RtcpSRPacketRcvCb(void* rtcpPacket,void* user);
+void RtcpSdesItemRcvCb(void* rtcpPacket,void* user);
+void RtcpSdesPrivateItemRcvCb(void* rtcpPacket,void* user);
+void RtcpByePacketRcvCb(void* rtcpPacket,void* user);
+void RtcpUnKnownPacketRcvCb(void* rtcpPacket,void* user);  //origin packet.one or more
 
 //typedef struct CRtcpPacketType CRtcpPacketType;
-
 typedef enum CRtpSessionType{
     CRtpSessionType_ORTP,
     CRtpSessionType_JRTP
@@ -49,6 +53,18 @@ int RcvDataWithTsRtpSession(CRtpSessionManager* p,uint8_t* buf,int len,uint32_t 
  * @cb:it should be CRtcpRcv type or occur a error
  */
 bool RegisterRtcpRcvCb(CRtpSessionManager* p,int type,void* cb,void* user);
+
+
+/*
+ * register specific rtcp packet callback interface
+ */
+bool RegisterAppPacketRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterRRPacketRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterSRPacketRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterSdesItemRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterSdesPrivateItemRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterByePacketRcvCb(CRtpSessionManager* p,void* cb,void* user);
+bool RegisterUnKnownPacketRcvCb(CRtpSessionManager* p,void* cb,void* user);
 
 
 /*
@@ -88,16 +104,70 @@ uint8_t  GetCC(void* p);
 
 
 /*
- * rtcp packet interface
+ * rtcp origin packet interface
  */
-uint8_t* GetRtcpPacketData(void* p,void* rtcpPacket);
-int GetPacketDataLength(void* p,void* rtcpPacket);
+//uint8_t* GetRtcpPacketData(void* p,void* rtcpPacket);
+//int GetPacketDataLength(void* p,void* rtcpPacket);
+//uint32_t GetSSRC(void* p,void* rtcpPacket);
+
+/*
+ * rtcp app packet
+ */
 uint8_t* GetAppData(void* p,void*rtcpPacket);
 int GetAppDataLength(void* p,void* rtcpPacket);
 uint8_t* GetAppName(void* p,void* rtcpPacket);
 uint32_t GetAppSsrc(void* p,void* rtcpPacket);
 uint8_t GetAppSubType(void* p,void* rtcpPacket);
 
+
+/*
+ * rtcp sdes item
+ */
+uint8_t* GetSdesItemData(void* p,void* rtcpPacket);
+int GetSdesItemDataLen(void* p,void* rtcpPacket);
+int GetSdesItemType(void* p,void* rtcpPacket);
+
+/*
+ * rtcp sdes private item
+ */
+uint8_t* GetSdesPrivatePrefixData(void* p,void* rtcpPacket);
+int GetSdesPrivatePrefixDataLen(void* p,void* rtcpPacket);
+uint8_t* GetSdesPrivateValueData(void* p,void* rtcpPacket);
+int GetSdesPrivateValueDataLen(void* p,void* rtcpPacket);
+
+/*
+ * unKnown packet
+ */
+uint8_t  GetUnknownPacketType(void* p,void* rtcpPacket);
+uint8_t* GetUnKnownRtcpPacketData(void* p,void* rtcpPacket);
+int GetUnKnownRtcpPacketDataLen(void* p,void* rtcpPacket);
+uint32_t GetUnKnownRtcpPacketSsrc(void* p,void* rtcpPacket);
+
+
+/*
+ * RR or SR Packet
+ */
+uint8_t GetRRFractionLost(void* p,void* rtcpPacket);
+uint32_t GetRRLostPacketNumber(void* p,void* rtcpPacket);
+uint32_t GetRRExtendedHighestSequenceNumber(void* p,void* rtcpPacket);
+uint32_t GetRRJitter(void* p,void* rtcpPacket);
+uint32_t GetRRLastSR(void* p,void* rtcpPacket);
+uint32_t GetRRDelaySinceLastSR(void* p,void* rtcpPacket);
+
+/*
+ * SR report packet
+ */
+uint32_t GetSRNtpLSWTimeStamp(void* p,void* rtcpPacket);
+uint32_t GetSRNtpMSWTimeStamp(void* p,void* rtcpPacket);
+uint32_t GetSRRtpTimeStamp(void* p,void* rtcpPacket);
+uint32_t GetSRSenderPacketCount(void* p,void* rtcpPacket);
+uint32_t GetSRSenderOctetCount(void* p,void* rtcpPacket);
+
+/*
+ * bye packet
+ */
+uint8_t* GetByeReasonData(void* p,void* rtcpPacket);
+int GetByeReasonDataLen(void* p,void* rtcpPacket);
 
 #ifdef __cplusplus
 }

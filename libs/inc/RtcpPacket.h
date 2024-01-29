@@ -12,46 +12,84 @@
 
 namespace iRtp{
 
-enum RtcpPackageType{
-     RTCP_PACKET_RR=0,
-     RTCP_PACKET_SR,
-     RTCP_PACKET_APP,
-     RTCP_PACKET_BYE,
-     RTCP_PACKET_SDES,
-     RTCP_PACKET_ORIGIN,
-     RTCP_PACKET_SIZE
-};
-
 
 
 class RtcpPacket{
 public:
-    RtcpPacket(RtcpPackageType t=RTCP_PACKET_ORIGIN):type(t){}
-    uint8_t* data;
+    RtcpPacket():data(nullptr),dataLen(0),ssrc(0){}
+    uint8_t* data; //reference.
     int dataLen;
-    const RtcpPackageType type;
+    uint32_t ssrc;
+
 };
 
 class RtcpAppPacket:public RtcpPacket{
 public:
-    RtcpAppPacket(): RtcpPacket(RTCP_PACKET_APP){}
+    RtcpAppPacket():appData(nullptr),appDataLen(0),name(nullptr),subType(0){}
     uint8_t* appData;
     int appDataLen;
     uint8_t* name;
-    uint32_t ssrc;
     uint8_t subType;
 };
 
 class RtcpSdesPacket:public RtcpPacket { //just for one item but can be any item type
 public:
-    RtcpSdesPacket(): RtcpPacket(RTCP_PACKET_SDES){}
-    int itemType;
+   RtcpSdesPacket():itemData(nullptr),itemType(0),itemDataLen(0){}
     uint8_t* itemData;
+    int itemType;
     int itemDataLen;
-
 
 }; //RtcpSdesPacket
 
+class RtcpSdesPrivatePacket:public RtcpSdesPacket{
+public:
+    RtcpSdesPrivatePacket():prefixData(nullptr),prefixDataLength(0),valueData(nullptr),valueDataLength(0){}
+    uint8_t* prefixData;
+    int prefixDataLength;
+    uint8_t* valueData;
+    int valueDataLength;
+};
+
+class RtcpRRPacket:public RtcpPacket{
+public:
+    RtcpRRPacket():fractionLost(0),lostPacketNumber(0),extendedHighestSequenceNumber(0)
+        ,jitter(0),lastSR(0),delaySinceLatSR(0){}
+    uint8_t fractionLost;
+    uint32_t lostPacketNumber;
+    uint32_t extendedHighestSequenceNumber;
+    uint32_t jitter;
+    uint32_t lastSR;
+    uint32_t delaySinceLatSR;
+};
+class RtcpSRPacket:public RtcpPacket{ //one report block
+public:
+    RtcpSRPacket():ntpLSWTimeStamp(0),ntpMSWTimeStamp(0),rtpTimeStamp(0),senderPacketCount(0),senderOctetCount(0){}
+    uint32_t ntpLSWTimeStamp;
+    uint32_t ntpMSWTimeStamp;
+    uint32_t rtpTimeStamp;
+    uint32_t senderPacketCount;
+    uint32_t senderOctetCount;
+    // the report block is the same as the RR
+
+};
+class RtcpByePacket:public RtcpPacket{
+public:
+    RtcpByePacket():reasonData(nullptr),reasonDataLength(0){}
+    uint8_t* reasonData;
+    uint8_t  reasonDataLength;
+};
+class RtcpUnknownPacket:public RtcpPacket{ //origin packet.one or more
+public:
+    RtcpUnknownPacket():unKnownType(0){}
+    uint8_t unKnownType;
+
+};
+
+
+
+/*
+ * further specific when necessary
+ */
 //class RtcpSdesPacket:public RtcpPacket{ //just for one item but can be any item type
 //public:
 //    RtcpSdesPacket(): RtcpPacket(RTCP_PACKET_SDES){}

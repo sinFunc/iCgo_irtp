@@ -33,12 +33,49 @@ func RcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
 	return len
 
 }
-//export CRtcpRcvCbFunction
-func CRtcpRcvCbFunction(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+//export RtcpAppPacketRcvCb
+func RtcpAppPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
 	fmt.Println("Receive rtcp app packet.name=",C.GetAppName(user,rtcpPacket))
 
 	return
 }
+//export RtcpRRPacketRcvCb
+func RtcpRRPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp rr lost packet count=",C.GetRRLostPacketNumber(user,rtcpPacket))
+
+	return
+}
+//export RtcpSRPacketRcvCb
+func RtcpSRPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp sr sender packet-count=",C.GetSRSenderPacketCount(user,rtcpPacket))
+
+	return
+}
+//export RtcpSdesItemRcvCb
+func RtcpSdesItemRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp sdes item packet-item data length=",C.GetSdesItemDataLen(user,rtcpPacket))
+
+	return
+}
+//export RtcpSdesPrivateItemRcvCb
+func RtcpSdesPrivateItemRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp sdes private item packet-prefix data len count=",C.GetSdesPrivatePrefixDataLen(user,rtcpPacket))
+
+	return
+}
+//export RtcpByePacketRcvCb
+func RtcpByePacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp bye packet-length=",C.GetByeReasonDataLen(user,rtcpPacket))
+
+	return
+}
+//export RtcpUnKnownPacketRcvCb
+func RtcpUnKnownPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp unKnown packet-data length=",C.GetUnKnownRtcpPacketDataLen(user,rtcpPacket))
+
+	return
+}
+
 
 
 func registerSignal(){
@@ -87,7 +124,14 @@ func main() {
 		return
 	}
 
-	C.RegisterRtcpRcvCb(pSession,0,unsafe.Pointer(C.CRtcpRcvCb(C.CRtcpRcvCbFunction)),(unsafe.Pointer(pSession)))
+	C.RegisterAppPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpAppPacketRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterRRPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpRRPacketRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterSRPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpSRPacketRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterSdesItemRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpSdesItemRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterSdesPrivateItemRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpSdesPrivateItemRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterByePacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpByePacketRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterUnKnownPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpUnKnownPacketRcvCb)),(unsafe.Pointer(pSession)))
+
 
 	registerSignal()
 

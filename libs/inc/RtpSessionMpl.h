@@ -75,7 +75,7 @@ namespace iRtp {
             SDES_ITEM,
             SDES_PRIVATE_ITEM,
             BYE_PACKET,
-            COMPOUND_PACKET, //origin packet include one or more type
+            UNKNOWN,
             SIZE
         };
 
@@ -217,13 +217,14 @@ namespace iRtp {
          * rtcp packet without unpacking
          * the user should unpack including different type by self
          */
-        inline uint8_t* GetPacketData(RtcpPacket* rtcpPacket)const{
-            RtcpPacket* p=static_cast<RtcpPacket*>(rtcpPacket);
+        inline uint8_t* GetPacketData(RtcpPacket* p)const{
             return p ? p->data: nullptr;
         }
-        inline int GetPacketDataLength(RtcpPacket* rtcpPacket)const{
-            RtcpPacket* p=static_cast<RtcpPacket*>(rtcpPacket);
+        inline int GetPacketDataLength(RtcpPacket* p)const{
             return p ? p->dataLen: 0;
+        }
+        inline uint32_t  GetSSRC(RtcpPacket* p)const{
+            return p ? p->ssrc: 0;
         }
 
         /*
@@ -249,6 +250,126 @@ namespace iRtp {
             RtcpAppPacket* p=static_cast<RtcpAppPacket*>(rtcpPacket);
             return p ? p->subType: 0;
         }
+
+        /*
+         * sdes item;user can get what they need for one item
+         */
+        inline uint8_t* GetSdesItemData(RtcpPacket* rp)const{
+            RtcpSdesPacket* p=static_cast<RtcpSdesPacket*>(rp);
+            return p ? p->itemData : nullptr;
+        }
+        inline int GetSdesItemDataLen(RtcpPacket* rp)const{
+            RtcpSdesPacket* p=static_cast<RtcpSdesPacket*>(rp);
+            return p ? p->itemDataLen : 0;
+        }
+        inline int GetSdesItemType(RtcpPacket* rp)const{
+            RtcpSdesPacket* p=static_cast<RtcpSdesPacket*>(rp);
+            return p ? p->itemType : 0;
+        }
+
+
+        /*
+         * sdes private item
+         */
+        inline uint8_t* GetSdesPrivatePrefixData(RtcpPacket* rp)const{
+            RtcpSdesPrivatePacket* p=static_cast<RtcpSdesPrivatePacket*>(rp);
+            return p ? p->prefixData : nullptr;
+        }
+        inline int GetSdesPrivatePrefixDataLen(RtcpPacket* rp)const{
+            RtcpSdesPrivatePacket* p=static_cast<RtcpSdesPrivatePacket*>(rp);
+            return p ? p->prefixDataLength: 0;
+        }
+        inline uint8_t* GetSdesPrivateValueData(RtcpPacket* rp)const{
+            RtcpSdesPrivatePacket* p=static_cast<RtcpSdesPrivatePacket*>(rp);
+            return p ? p->valueData: nullptr;
+        }
+        inline int GetSdesPrivateValueDataLen(RtcpPacket* rp)const{
+            RtcpSdesPrivatePacket* p=static_cast<RtcpSdesPrivatePacket*>(rp);
+            return p ? p->valueDataLength: 0;
+        }
+
+        /*
+         * Bye packet
+         */
+        inline uint8_t* GetByeReasonData(RtcpPacket* rp)const{
+           RtcpByePacket* p=static_cast<RtcpByePacket*>(rp);
+           return p ? p->reasonData: 0;
+        }
+        inline int GetByeReasonDataLen(RtcpPacket* rp)const{
+            RtcpByePacket* p=static_cast<RtcpByePacket*>(rp);
+            return p ? p->reasonDataLength: 0;
+        }
+
+        /*
+         * unKnown packet
+         */
+        inline uint8_t  GetUnknownPacketType(RtcpPacket* rp)const{
+            RtcpUnknownPacket* p=static_cast< RtcpUnknownPacket*>(rp);
+            return p ? p->unKnownType: 0;
+        }
+        inline uint8_t* GetUnKnownRtcpPacketData(RtcpPacket* rp) const{
+            return rp ? rp ->data :nullptr;
+        }
+        inline int GetUnKnownRtcpPacketDataLen(RtcpPacket* rp)const{
+            return rp ? rp->dataLen : 0;
+        }
+        inline uint32_t GetUnKnownRtcpPacketSsrc(RtcpPacket* rp)const{
+            return rp ? rp->ssrc : 0 ;
+        }
+
+        /*
+         * RR packet
+         */
+        inline uint8_t GetRRFractionLost(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->fractionLost: 0;
+        }
+        inline uint32_t GetRRLostPacketNumber(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->lostPacketNumber: 0;
+        }
+        inline uint32_t GetRRExtendedHighestSequenceNumber(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->extendedHighestSequenceNumber: 0;
+        }
+        inline uint32_t GetRRJitter(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->jitter: 0;
+        }
+        inline uint32_t GetRRLastSR(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->lastSR: 0;
+        }
+        inline uint32_t GetRRDelaySinceLastSR(RtcpPacket* rp)const{
+            RtcpRRPacket* p=static_cast<RtcpRRPacket*>(rp);
+            return p ? p->delaySinceLatSR: 0;
+        }
+
+        /*
+         * SR packet
+         */
+        inline uint32_t GetSRNtpLSWTimeStamp(RtcpPacket* rp)const{
+            RtcpSRPacket* p=static_cast<RtcpSRPacket*>(rp);
+            return p ? p->ntpLSWTimeStamp: 0;
+        }
+        inline uint32_t GetSRNtpMSWTimeStamp(RtcpPacket* rp)const{
+            RtcpSRPacket* p=static_cast<RtcpSRPacket*>(rp);
+            return p ? p->ntpMSWTimeStamp: 0;
+        }
+        inline uint32_t GetSRRtpTimeStamp(RtcpPacket* rp)const{
+            RtcpSRPacket* p=static_cast<RtcpSRPacket*>(rp);
+            return p ? p->rtpTimeStamp: 0;
+        }
+        inline uint32_t GetSRSenderPacketCount(RtcpPacket* rp)const{
+            RtcpSRPacket* p=static_cast<RtcpSRPacket*>(rp);
+            return p ? p->senderPacketCount: 0;
+        }
+        inline uint32_t GetSRSenderOctetCount(RtcpPacket* rp)const{
+            RtcpSRPacket* p=static_cast<RtcpSRPacket*>(rp);
+            return p ? p->senderOctetCount: 0;
+        }
+
+
 
 
     protected:
