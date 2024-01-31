@@ -16,11 +16,11 @@ import (
 	"os/signal"
 	"sync/atomic"
 	"syscall"
-	"time"
 	"unsafe"
 )
 
 var gStopFlag atomic.Bool
+var stopFlagCh chan bool=make(chan bool,1)
 
 //export RcvCb
 func RcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
@@ -29,6 +29,28 @@ func RcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
 	}
 
 	fmt.Println("Receive payload len=",len,"seq=",C.GetSequenceNumber(user)," from ssrc=",C.GetSsrc(user))
+
+	return len
+
+}
+//export RtcpPayloadRcvCb
+func RtcpPayloadRcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
+	if user==nil && marker==1 || buf==nil{
+
+	}
+
+	fmt.Println("Receive payload len=",len,"seq=",C.GetSequenceNumber(user)," from ssrc=",C.GetSsrc(user))
+
+	return len
+
+}
+//export RtcpPacketRcvCb
+func RtcpPacketRcvCb(buf *C.uint8_t,len C.int,marker C.int,user unsafe.Pointer) C.int {
+	if user==nil && marker==1 || buf==nil{
+
+	}
+
+	fmt.Println("Receive packet len=",len,"seq=",C.GetSequenceNumber(user)," from ssrc=",C.GetSsrc(user))
 
 	return len
 
@@ -75,6 +97,12 @@ func RtcpUnKnownPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
 
 	return
 }
+//export RtcpOriginPacketRcvCb
+func RtcpOriginPacketRcvCb(rtcpPacket unsafe.Pointer,user unsafe.Pointer){
+	fmt.Println("Receive rtcp origin packet-data length=",C.GetPacketDataLength(user,rtcpPacket))
+
+	return
+}
 
 
 
@@ -90,10 +118,12 @@ func registerSignal(){
 }
 
 func onSignal(sig chan os.Signal){
+	stopFlagCh<-false
 	for{
 		s:=<-sig
 		fmt.Println("receive signal:",s.String())
 		gStopFlag.Store(true)
+		stopFlagCh<-true
 	}
 }
 
@@ -118,11 +148,16 @@ func main() {
 
 
 	ret:=C.InitRtpSession(pSession,pInitData)
+	k:=C.CString("receiveBufferSize")
+	v:=C.CString(string(1024*1024*2))
+	C.AddPairsParams(pInitData,k,v)
 	C.DestroyRtpSessionInitData(pInitData)
 	if !ret{
 		fmt.Println("initRtpSession fails.")
 		return
 	}
+
+
 
 	C.RegisterAppPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpAppPacketRcvCb)),(unsafe.Pointer(pSession)))
 	C.RegisterRRPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpRRPacketRcvCb)),(unsafe.Pointer(pSession)))
@@ -131,9 +166,16 @@ func main() {
 	C.RegisterSdesPrivateItemRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpSdesPrivateItemRcvCb)),(unsafe.Pointer(pSession)))
 	C.RegisterByePacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpByePacketRcvCb)),(unsafe.Pointer(pSession)))
 	C.RegisterUnKnownPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpUnKnownPacketRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterOriginPacketRcvCb(pSession,unsafe.Pointer(C.CRtcpRcvCb(C.RtcpOriginPacketRcvCb)),(unsafe.Pointer(pSession)))
+
+	C.RegisterRtpOnlyPayloadRcvCb(pSession,unsafe.Pointer(C.CRtpRcvCb(C.RtcpPayloadRcvCb)),(unsafe.Pointer(pSession)))
+	C.RegisterRtpPacketRcvCb(pSession,unsafe.Pointer(C.CRtpRcvCb(C.RtcpPacketRcvCb)),(unsafe.Pointer(pSession)))
 
 
 	registerSignal()
+
+
+	C. LoopRtpSession(pSession) //listen to reception.but return immediately.
 
 	buf :=[10]uint8{1,2,3,4,5,6,7,8,9}
 	repeat:=10
@@ -141,14 +183,25 @@ func main() {
 		C.SendDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&buf)),10,0)
 	}
 
-	const rcvLen int =1024
-	var rcvBuf [rcvLen]uint8
-	for !gStopFlag.Load(){
-		C.RcvDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&rcvBuf)),(C.int)(rcvLen),C.CRcvCb(C.RcvCb),
-		(unsafe.Pointer(pSession)))
-		time.Sleep(time.Millisecond)
+	for{
+		select {
+		 	case flag:=<-stopFlagCh:
+		 		if flag{
+					fmt.Println("gonna Stop tasks...")
+					goto END
+				}
+		 }
 	}
 
+	//const rcvLen int =1024
+	//var rcvBuf [rcvLen]uint8
+	//for !gStopFlag.Load(){
+	//	C.RcvDataRtpSession(pSession,(*C.uint8_t)(unsafe.Pointer(&rcvBuf)),(C.int)(rcvLen),C.CRcvCb(C.RcvCb),
+	//	(unsafe.Pointer(pSession)))
+	//	time.Sleep(time.Millisecond)
+	//}
+END:
+	C.StopRtpSession(pSession)
 	C.DestroyRtpSession(pSession)
 
 

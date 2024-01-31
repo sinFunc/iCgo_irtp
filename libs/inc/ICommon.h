@@ -6,6 +6,7 @@
 #define IRTP_ICOMMON_H
 #include <iostream>
 #include <chrono>
+#include <string.h>
 
 #define LOG_FIXED_HEADER() ({std::string strRet= \
         std::move("["+std::string(basename(const_cast<char*>(__FILE__)))+"-"+std::string(__FUNCTION__ )+"-"+std::to_string(__LINE__)+"] "); \

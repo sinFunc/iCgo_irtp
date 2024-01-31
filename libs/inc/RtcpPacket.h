@@ -5,8 +5,8 @@
 #ifndef IRTP_RTCPPACKET_H
 #define IRTP_RTCPPACKET_H
 #include "ICommon.h"
-#include <string.h>
-#include <list>
+//#include <string.h>
+//#include <list>
 
 //#include "rtcpsdespacket.h"
 
@@ -20,7 +20,6 @@ public:
     uint8_t* data; //reference.
     int dataLen;
     uint32_t ssrc;
-
 };
 
 class RtcpAppPacket:public RtcpPacket{
@@ -53,13 +52,13 @@ public:
 class RtcpRRPacket:public RtcpPacket{
 public:
     RtcpRRPacket():fractionLost(0),lostPacketNumber(0),extendedHighestSequenceNumber(0)
-        ,jitter(0),lastSR(0),delaySinceLatSR(0){}
+        ,jitter(0),lastSR(0),delaySinceLastSR(0){}
     uint8_t fractionLost;
     uint32_t lostPacketNumber;
     uint32_t extendedHighestSequenceNumber;
     uint32_t jitter;
     uint32_t lastSR;
-    uint32_t delaySinceLatSR;
+    uint32_t delaySinceLastSR;
 };
 class RtcpSRPacket:public RtcpPacket{ //one report block
 public:
