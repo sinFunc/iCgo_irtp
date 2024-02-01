@@ -171,6 +171,7 @@ func main() {
 	C.RegisterRtpOnlyPayloadRcvCb(pSession,unsafe.Pointer(C.CRtpRcvCb(C.RtcpPayloadRcvCb)),(unsafe.Pointer(pSession)))
 	C.RegisterRtpPacketRcvCb(pSession,unsafe.Pointer(C.CRtpRcvCb(C.RtcpPacketRcvCb)),(unsafe.Pointer(pSession)))
 
+	C.SetRtcpDisable(pSession,C.int(1))
 
 	registerSignal()
 
